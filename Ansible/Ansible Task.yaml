@@ -1,0 +1,60 @@
+- name: Ansible Task
+  hosts: all
+  become: yes
+
+  tasks:
+    - name: Package Updater 
+      apt:
+        update_cache: yes
+
+    - name: Install required packages
+      apt:
+        name:
+          - wget
+          - openjdk-11-jdk
+          - curl
+        state: present
+
+    - name: Java
+      
+      get_url:
+        url: https://download.oracle.com/java/19/latest/jdk-19_linux-x64_bin.tar.gz
+        dest: /tmp/jdk.tar.gz
+      
+      unarchive:
+        src: /tmp/jdk.tar.gz
+        dest: /usr/lib/jvm
+        remote_src: yes
+
+      set_fact:
+        JAVA_HOME: /usr/lib/jvm/jdk-19
+
+      shell: echo 'export JAVA_HOME=/usr/lib/jvm/jdk-19' >> /etc/environment
+
+    - name: Tomcat
+      
+      get_url:
+        url: https://downloads.apache.org/tomcat/tomcat-9/v9.0.84/bin/apache-tomcat-9.0.84.tar.gz
+        dest: /tmp/tomcat.tar.gz
+
+      unarchive:
+        src: /tmp/tomcat.tar.gz
+        dest: /opt/tomcat
+        remote_src: yes
+
+    - name: Nexus
+      
+      get_url:
+        url: https://download.sonatype.com/nexus/3/nexus-3.41.0-01-unix.tar.gz
+        dest: /tmp/nexus.tar.gz
+
+      unarchive:
+        src: /tmp/nexus.tar.gz
+        dest: /opt/nexus
+        remote_src: yes
+
+      copy:
+        src: nexus.conf
+        dest: /opt/nexus/etc/nexus.conf
+        owner: nexus
+        group: nexus
